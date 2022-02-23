@@ -31,6 +31,8 @@ HBITMAP gRefreshButtonImage;
 
 HTHUMBNAIL gThumbnail;
 
+DWM_THUMBNAIL_PROPERTIES gThumbnailProperties = { 0 };
+
 BOOL gAppIsRunning = TRUE;
 
 
@@ -38,11 +40,8 @@ BOOL gAppIsRunning = TRUE;
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hInstance);
-
 	UNREFERENCED_PARAMETER(hPrevInstance);
-
 	UNREFERENCED_PARAMETER(pCmdLine);
-
 	UNREFERENCED_PARAMETER(nCmdShow);
 
 	DWORD Result = ERROR_SUCCESS;
@@ -51,9 +50,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 	MSG WindowMessage = { 0 };
 
-	WNDCLASSEXW WindowClass = { 0 };
-
-	HFONT GUIFont = CreateFontW(14, 0, 0, 0, 200, 0, 0, 0, 0, 0, 0, 0, 0, L"Consolas");
+	WNDCLASSEXW WindowClass = { 0 };	
 
 	DWORD RefreshTime = 0;
 
@@ -84,7 +81,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		WS_EX_TOPMOST,
 		WindowClass.lpszClassName,
 		L"KeepAnEyeOut",
-		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE,
+		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		412,
@@ -105,113 +102,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		goto Exit;
 	}
 
-	// Create the static label.
 
-	gLabel01 = CreateWindowExW(
-		0,
-		L"STATIC",
-		L"Choose a window to keep an eye on:",
-		WS_VISIBLE | WS_CHILD | SS_LEFT,
-		4,
-		4,
-		300,
-		20,
-		gMainWindow,
-		(HMENU)LABEL01_ID,
-		GetModuleHandleW(NULL),
-		NULL);
-
-	if (gLabel01 == NULL)
-	{
-		Result = GetLastError();
-
-		_snwprintf_s(ErrorMessage, _countof(ErrorMessage), _TRUNCATE, L"Failed to create label! Error: 0x%08lx", Result);
-
-		MessageBoxW(NULL, ErrorMessage, L"ERROR", MB_ICONERROR | MB_OK);
-
-		goto Exit;
-	}
-
-	SendMessageW(gLabel01, WM_SETFONT, (WPARAM)GUIFont, 0);
-
-	// Create the dropdown box.
-
-	gComboBox01 = CreateWindowExW(
-		0,
-		L"COMBOBOX",
-		NULL,
-		CBS_DROPDOWN | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-		4, 
-		24, 
-		350, 
-		300, 
-		gMainWindow, 
-		(HMENU)COMBOBOX01_ID, 
-		GetModuleHandleW(NULL),
-		NULL);
-
-	if (gComboBox01 == NULL)
-	{
-		Result = GetLastError();
-
-		_snwprintf_s(ErrorMessage, _countof(ErrorMessage), _TRUNCATE, L"Failed to create combobox! Error: 0x%08lx", Result);
-
-		MessageBoxW(NULL, ErrorMessage, L"ERROR", MB_ICONERROR | MB_OK);
-
-		goto Exit;
-	}
-
-	SendMessageW(gComboBox01, WM_SETFONT, (WPARAM)GUIFont, 0);
-
-	EnumWindows(EnumWindowsProc, 0);
-
-	// Create the refresh button.
-
-	gButton01 = CreateWindowExW(
-		0,
-		L"BUTTON",
-		NULL,
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_BITMAP,
-		360,
-		22,
-		24,
-		24,
-		gMainWindow,
-		(HMENU)BUTTON01_ID,
-		GetModuleHandleW(NULL),
-		NULL);
-
-	if (gButton01 == NULL)
-	{
-		Result = GetLastError();
-
-		_snwprintf_s(ErrorMessage, _countof(ErrorMessage), _TRUNCATE, L"Failed to create button! Error: 0x%08lx", Result);
-
-		MessageBoxW(NULL, ErrorMessage, L"ERROR", MB_ICONERROR | MB_OK);
-
-		goto Exit;
-	}
-
-	gRefreshButtonImage = (HBITMAP)LoadImageW(
-		GetModuleHandleW(NULL),
-		MAKEINTRESOURCEW(IDB_BITMAP1),
-		IMAGE_BITMAP,
-		0,
-		0,
-		LR_DEFAULTCOLOR);
-
-	if (gRefreshButtonImage == NULL)
-	{
-		Result = GetLastError();
-
-		_snwprintf_s(ErrorMessage, _countof(ErrorMessage), _TRUNCATE, L"Failed to load refresh bitmap! Error: 0x%08lx", Result);
-
-		MessageBoxW(NULL, ErrorMessage, L"ERROR", MB_ICONERROR | MB_OK);
-
-		goto Exit;
-	}
-
-	SendMessageW(gButton01, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)gRefreshButtonImage);
 
 	while (gAppIsRunning == TRUE)
 	{
@@ -251,12 +142,134 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 
 	switch (Message)
 	{
+		case WM_CREATE:
+		{
+			HFONT Font = CreateFontW(14, 0, 0, 0, 200, 0, 0, 0, 0, 0, 0, 0, 0, L"Consolas");
+
+			wchar_t ErrorMessage[256] = { 0 };
+
+			// Create the static label.
+			gLabel01 = CreateWindowExW(
+				0,
+				L"STATIC",
+				L"Choose a window to keep an eye on:",
+				WS_VISIBLE | WS_CHILD | SS_LEFT,
+				4,
+				4,
+				300,
+				20,
+				WindowHandle,
+				(HMENU)LABEL01_ID,
+				GetModuleHandleW(NULL),
+				NULL);
+
+			if (gLabel01 == NULL)
+			{
+				_snwprintf_s(ErrorMessage, _countof(ErrorMessage), _TRUNCATE, L"Failed to create label! Error: 0x%08lx", GetLastError());
+
+				MessageBoxW(NULL, ErrorMessage, L"ERROR", MB_ICONERROR | MB_OK);
+
+				gAppIsRunning = FALSE;
+
+				break;
+			}
+
+			SendMessageW(gLabel01, WM_SETFONT, (WPARAM)Font, 0);
+
+			// Create the dropdown box.
+
+			gComboBox01 = CreateWindowExW(
+				0,
+				L"COMBOBOX",
+				NULL,
+				CBS_DROPDOWN | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE | WS_VSCROLL,
+				4,
+				24,
+				350,
+				300,
+				WindowHandle,
+				(HMENU)COMBOBOX01_ID,
+				GetModuleHandleW(NULL),
+				NULL);
+
+			if (gComboBox01 == NULL)
+			{
+				_snwprintf_s(ErrorMessage, _countof(ErrorMessage), _TRUNCATE, L"Failed to create combobox! Error: 0x%08lx", GetLastError());
+
+				MessageBoxW(NULL, ErrorMessage, L"ERROR", MB_ICONERROR | MB_OK);
+
+				gAppIsRunning = FALSE;
+
+				break;
+			}
+
+			SendMessageW(gComboBox01, WM_SETFONT, (WPARAM)Font, 0);
+
+			EnumWindows(EnumWindowsProc, 0);
+
+			// Create the refresh button.
+
+			gButton01 = CreateWindowExW(
+				0,
+				L"BUTTON",
+				NULL,
+				WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_BITMAP,
+				360,
+				22,
+				24,
+				24,
+				WindowHandle,
+				(HMENU)BUTTON01_ID,
+				GetModuleHandleW(NULL),
+				NULL);
+
+			if (gButton01 == NULL)
+			{
+				_snwprintf_s(ErrorMessage, _countof(ErrorMessage), _TRUNCATE, L"Failed to create button! Error: 0x%08lx", GetLastError());
+
+				MessageBoxW(NULL, ErrorMessage, L"ERROR", MB_ICONERROR | MB_OK);
+
+				gAppIsRunning = FALSE;
+
+				break;
+			}
+
+			gRefreshButtonImage = (HBITMAP)LoadImageW(
+				GetModuleHandleW(NULL),
+				MAKEINTRESOURCEW(IDB_BITMAP1),
+				IMAGE_BITMAP,
+				0,
+				0,
+				LR_DEFAULTCOLOR);
+
+			if (gRefreshButtonImage == NULL)
+			{
+				_snwprintf_s(ErrorMessage, _countof(ErrorMessage), _TRUNCATE, L"Failed to load refresh bitmap! Error: 0x%08lx", GetLastError());
+
+				MessageBoxW(NULL, ErrorMessage, L"ERROR", MB_ICONERROR | MB_OK);
+
+				gAppIsRunning = FALSE;
+
+				break;
+			}
+
+			SendMessageW(gButton01, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)gRefreshButtonImage);
+
+			break;
+		}
 		case WM_COMMAND:
 		{
 			switch (LOWORD(WParam))
 			{
 				case BUTTON01_ID:
 				{
+					if (gThumbnail != NULL)
+					{
+						DwmUnregisterThumbnail(gThumbnail);
+
+						gThumbnail = NULL;
+					}
+
 					SendMessageW(gComboBox01, CB_RESETCONTENT, 0, 0);
 
 					EnumWindows(EnumWindowsProc, 0);
@@ -267,7 +280,7 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 				{
 					if (HIWORD(WParam) == CBN_SELCHANGE)
 					{
-						HRESULT Hr = S_OK;						
+						HRESULT Hr = S_OK;					
 
 						wchar_t ErrorMessage[256] = { 0 };
 
@@ -282,15 +295,6 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 							Hr = DwmUnregisterThumbnail(gThumbnail);
 
 							gThumbnail = NULL;
-
-							if (Hr != S_OK)
-							{
-								_snwprintf_s(ErrorMessage, _countof(ErrorMessage), _TRUNCATE, L"DwmUnRegisterThumbnail failed! HRESULT = %08lx", Hr);
-
-								MessageBoxW(NULL, ErrorMessage, L"ERROR", MB_OK | MB_ICONERROR);
-
-								break;
-							}
 						}
 
 						//
@@ -306,21 +310,30 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 
 						if (SUCCEEDED(Hr))
 						{
-							DWM_THUMBNAIL_PROPERTIES ThumbnailProperties = { 0 };
+							RECT ClientRect = { 0 };
 
-							ThumbnailProperties.dwFlags = DWM_TNP_SOURCECLIENTAREAONLY | DWM_TNP_VISIBLE | DWM_TNP_OPACITY | DWM_TNP_RECTDESTINATION;
+							GetClientRect(gMainWindow, &ClientRect);
 
-							ThumbnailProperties.fSourceClientAreaOnly = FALSE;
+							ClientRect.left += 4;
 
-							ThumbnailProperties.fVisible = TRUE;
+							ClientRect.right -= 4;
 
-							ThumbnailProperties.opacity = 255;
+							ClientRect.bottom -= 4;
 
-							// 384x216 resolution - 16:9 aspect ratio
+							ClientRect.top += 50;
+
+							gThumbnailProperties.dwFlags = DWM_TNP_SOURCECLIENTAREAONLY | DWM_TNP_VISIBLE | DWM_TNP_OPACITY | DWM_TNP_RECTDESTINATION;
+
+							gThumbnailProperties.fSourceClientAreaOnly = FALSE;
+
+							gThumbnailProperties.fVisible = TRUE;
+
+							gThumbnailProperties.opacity = 255;
+							
 							// IMPORTANT: Per-Monitor DPI Awareness set in application manifest!
-							ThumbnailProperties.rcDestination = (RECT){ 4, 48, 384 + 4, 216 + 48 }; 
+							gThumbnailProperties.rcDestination = ClientRect;
 
-							Hr = DwmUpdateThumbnailProperties(gThumbnail, &ThumbnailProperties);
+							Hr = DwmUpdateThumbnailProperties(gThumbnail, &gThumbnailProperties);
 
 							if (FAILED(Hr))
 							{
@@ -355,6 +368,29 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 
 			break;
 		}
+		case WM_SIZING:
+		{
+			if (gThumbnail != NULL)
+			{
+				RECT ClientRect = { 0 };
+
+				GetClientRect(gMainWindow, &ClientRect);
+
+				ClientRect.left += 4;
+
+				ClientRect.right -= 4;
+
+				ClientRect.bottom -= 4;
+
+				ClientRect.top += 50;
+
+				gThumbnailProperties.rcDestination = ClientRect;
+
+				DwmUpdateThumbnailProperties(gThumbnail, &gThumbnailProperties);
+			}
+
+			return(TRUE);
+		}
 		default:
 		{
 			Result = DefWindowProcW(WindowHandle, Message, WParam, LParam);
@@ -374,9 +410,9 @@ BOOL CALLBACK EnumWindowsProc(_In_ HWND WindowHandle, _In_ LPARAM LParam)
 
 		GetWindowTextW(WindowHandle, WindowTitle, _countof(WindowTitle));
 
-		if ((wcslen(WindowTitle) > 0) && (WindowHandle != gMainWindow))
+		if ((wcslen(WindowTitle) > 0) && (WindowHandle != gMainWindow) && IsWindowVisible(WindowHandle))
 		{
-			SendMessageW(GetDlgItem(gMainWindow, COMBOBOX01_ID), CB_ADDSTRING, 0, (LPARAM)WindowTitle);			
+			SendMessageW(gComboBox01, CB_ADDSTRING, 0, (LPARAM)WindowTitle);			
 		}
 	}
 
