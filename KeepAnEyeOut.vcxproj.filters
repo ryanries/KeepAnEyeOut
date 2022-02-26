@@ -36,5 +36,8 @@
     <Image Include="Refresh.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="icon256x256.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

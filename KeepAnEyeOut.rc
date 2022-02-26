@@ -52,7 +52,16 @@ END
 
 IDB_BITMAP1             BITMAP                  "Refresh.bmp"
 
-MAINICON ICON "C:\\Users\\ryanr\\source\\repos\\KeepAnEyeOut\\icon256x256.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+MAINICON                ICON                    "C:\\Users\\ryanr\\source\\repos\\KeepAnEyeOut\\icon256x256.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -60,8 +69,8 @@ MAINICON ICON "C:\\Users\\ryanr\\source\\repos\\KeepAnEyeOut\\icon256x256.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,0
- PRODUCTVERSION 1,0,0,0
+ FILEVERSION 1,1,0,0
+ PRODUCTVERSION 1,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +87,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Joseph Ryan Ries"
             VALUE "FileDescription", "KeepAnEyeOut"
-            VALUE "FileVersion", "1.0.0.0"
+            VALUE "FileVersion", "1.1.0.0"
             VALUE "InternalName", "KeepAnEyeOut.exe"
             VALUE "LegalCopyright", "Copyright (C) Joseph Ryan Ries 2022"
             VALUE "OriginalFilename", "KeepAnEyeOut.exe"
             VALUE "ProductName", "KeepAnEyeOut"
-            VALUE "ProductVersion", "1.0.0.0"
+            VALUE "ProductVersion", "1.1.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -92,12 +101,8 @@ BEGIN
     END
 END
 
-
-
-
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
-
 
 
 

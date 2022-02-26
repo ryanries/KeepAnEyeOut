@@ -64,6 +64,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 	WindowClass.hbrBackground = (HBRUSH)COLOR_WINDOW;
 
+	WindowClass.hCursor = LoadCursorW(NULL, IDC_ARROW);
+
 	// Create the main window.
 
 	if (RegisterClassExW(&WindowClass) == 0)
@@ -368,6 +370,22 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 
 			break;
 		}
+		case WM_LBUTTONUP:
+		{
+			if (gThumbnail != NULL)
+			{
+				wchar_t WindowText[256] = { 0 };
+
+				DWORD SelectedIndex = (DWORD)SendMessageW(gComboBox01, CB_GETCURSEL, 0, 0);
+
+				SendMessageW(gComboBox01, CB_GETLBTEXT, (WPARAM)SelectedIndex, (LPARAM)WindowText);
+
+				BringWindowToTop(FindWindowW(NULL, WindowText));
+			}
+
+			break;
+		}
+		case WM_SIZE:
 		case WM_SIZING:
 		{
 			if (gThumbnail != NULL)

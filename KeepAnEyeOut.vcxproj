@@ -179,6 +179,7 @@
     <ResourceCompile Include="KeepAnEyeOut.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="icon256x256.ico" />
     <Image Include="Refresh.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
